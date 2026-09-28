@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cipaa cintakuu</title>
+      <style>
+  :root{
+    --plum:#2b1330; --rose:#e8657a; --peach:#ffe3d8; --gold:#f2b84b; --paper:#fff8f2;
+    --serif:'Fraunces',Georgia,serif; --hand:'Caveat','Segoe Script',cursive;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    background:radial-gradient(circle at 50% 0%,#4a1f4d 0%,var(--plum) 60%);
+    color:var(--peach); font-family:var(--serif);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:24px; overflow-x:hidden;
+  }
+  h1{font-size:clamp(1.8rem,6vw,3rem);margin:0 0 6px;text-align:center;font-weight:600}
+  .sub{margin:0 0 28px;font-style:italic;opacity:.8;text-align:center}
+
+  /* Amplop */
+  .envelope{
+    position:relative; width:min(320px,86vw); height:210px; border:0; padding:0;
+    background:var(--rose); border-radius:6px; cursor:pointer; color:var(--paper);
+    box-shadow:0 18px 40px rgba(0,0,0,.4);
+  }
+  .envelope::before{ /* tutup amplop */
+    content:""; position:absolute; inset:0 0 auto 0; height:60%;
+    background:#d4506a; clip-path:polygon(0 0,100% 0,50% 100%);
+    transform-origin:top; transition:transform .6s ease; z-index:3;
+  }
+  .envelope .seal{
+    position:absolute; left:50%; top:52%; transform:translate(-50%,-50%);
+    width:48px;height:48px;border-radius:50%;background:var(--gold);color:var(--plum);
+    display:grid;place-items:center;font-size:24px;z-index:4;transition:opacity .3s;
+  }
+  .envelope.open::before{transform:rotateX(180deg);z-index:0}
+  .envelope.open .seal{opacity:0}
+  .hint{margin-top:14px;font-size:.95rem;opacity:.75}
+
+  /* Surat */
+  .letter{
+    width:min(560px,92vw); background:var(--paper); color:var(--plum);
+    border-radius:8px; padding:28px 26px; margin-top:26px;
+    box-shadow:0 18px 40px rgba(0,0,0,.4);
+    display:none; font-family:var(--hand); font-size:1.5rem; line-height:1.5;
+  }
+  .letter.show{display:block;animation:rise .7s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+  .letter .to{font-weight:700;color:var(--rose);font-size:1.8rem}
+  .letter p{margin:.5em 0}
+  .sign{text-align:right;font-weight:700}
+
+  .days{margin-top:20px;text-align:center;display:none}
+  .days.show{display:block}
+  .days strong{display:block;font-size:2.4rem;color:var(--gold)}
+
+  .love-btn{
+    margin-top:22px;background:var(--gold);color:var(--plum);border:0;border-radius:999px;
+    padding:12px 24px;font:600 1rem var(--serif);cursor:pointer;display:none;
+  }
+  .love-btn.show{display:inline-block}
+  .love-btn:active{transform:scale(.96)}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+  .heart{position:fixed;bottom:-30px;pointer-events:none;animation:float 3s linear forwards;z-index:9}
+  @keyframes float{to{transform:translateY(-110vh) rotate(25deg);opacity:0}}
+  @media (prefers-reduced-motion:reduce){
+    .heart{animation-duration:.01s}.letter.show{animation:none}.envelope::before{transition:none}
+  }
+</style>
+</head>
+<body>
+     <h1>Untuk Cipa, Cintaku</h1>
+  <p class="sub">Ada sesuatu di dalam amplop ini.</p>
+
+  <button class="envelope" id="env" aria-label="Buka amplop">
+    <span class="seal">♥️</span>
+  </button>
+  <p class="hint" id="hint">Ketuk amplopnya</p>
+
+  <article class="letter" id="letter">
+    <div class="to">Cipa Cintaku,</div>
+    <p id="text"></p>
+    <p class="sign">Yang selalu cintaa kamuu ♥️</p>
+  </article>
+
+  <div class="days" id="days">
+    <span>Sudah kita lewati bersama</span>
+    <strong id="count">0</strong>
+    <span>hari, dan aku ingin menambah lebih banyak lagi.</span>
+  </div>
+
+  <button class="love-btn" id="loveBtn">Klik kalau kamu sayang aku</button>
+
+<script>
+  /* ====== UBAH BAGIAN INI ====== */
+  const START_DATE = "2024-01-01"; // tanggal jadian (format: TAHUN-BULAN-TANGGAL)
+  const MESSAGE =
+    "Terima kasih sudah jadi tempat pulangku. " +
+    "Kamu bikin hari yang biasa jadi terasa istimewa, " +
+    "dan aku bersyukur banget bisa kenal kamu. " +
+    "Apa pun yang terjadi, aku mau terus ada di sisimu.";
+  /* ============================= */
+
+  const env = document.getElementById('env');
+  const letter = document.getElementById('letter');
+  const text = document.getElementById('text');
+  const days = document.getElementById('days');
+  const loveBtn = document.getElementById('loveBtn');
+  const hint = document.getElementById('hint');
+  let opened = false;
+
+  function typeWriter(str, i = 0){
+    if (i <= str.length){
+      text.textContent = str.slice(0, i);
+      setTimeout(() => typeWriter(str, i + 1), 35);
+    }
+  }
+
+  function daysTogether(){
+    const ms = Date.now() - new Date(START_DATE).getTime();
+    return Math.max(0, Math.floor(ms / 86400000));
+  }
+
+  env.addEventListener('click', () => {
+    if (opened) return;
+    opened = true;
+    env.classList.add('open');
+    hint.style.display = 'none';
+    setTimeout(() => {
+      letter.classList.add('show');
+      typeWriter(MESSAGE);
+      document.getElementById('count').textContent = daysTogether().toLocaleString('id-ID');
+      days.classList.add('show');
+      loveBtn.classList.add('show');
+    }, 500);
+  });
+
+  loveBtn.addEventListener('click', () => {
+    const icons = ['💗','💖','💕','🌹','✨'];
+    for (let i = 0; i < 18; i++){
+      const h = document.createElement('span');
+      h.className = 'heart';
+      h.textContent = icons[Math.floor(Math.random() * icons.length)];
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.fontSize = 18 + Math.random() * 26 + 'px';
+      h.style.animationDelay = Math.random() * .8 + 's';
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 4000);
+    }
+  });
+</script>
+</body>
+</html>
